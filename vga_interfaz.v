@@ -19,7 +19,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module vga_interfaz (
-    input wire clk, activring, bandera_Hhora, bandera_Mhora, bandera_Shora, bandera_Dfecha, bandera_Mfecha,
+    input wire clk, activring, bandera_Hhora, bandera_Mhora, bandera_Shora, bandera_Dfecha, bandera_Mfecha, video_on,
 	 input wire bandera_Afecha, bandera_Hcrono, bandera_Mcrono, bandera_Scrono,
     input wire [3:0] hora1, hora2, min1, 
 	 input wire [3:0] min2, sec1, sec2, 
@@ -62,14 +62,15 @@ font_rom instance_name (
    assign hora_on = (1<=pix_y[7:5]) && (pix_y[7:5]<=4) && (3<=pix_x[8:6]) && (pix_x[8:6]<=6);
    assign row_addr_h = pix_y[6:3];
    assign bit_addr_h = pix_x[5:3];
-   always @*
+   always @*begin
+	char_addr_h = 3'o0;
       case (pix_x[8:6])
          3'o3: char_addr_h = 7'h48; // H
          3'o4: char_addr_h = 7'h4f; // O
          3'o5: char_addr_h = 7'h52; // R
          3'o6: char_addr_h = 7'h41; // A
        endcase
-		 
+		end 
    //-------------------------------------------
    //  HORA numbers region:
    //   - display time
@@ -81,7 +82,8 @@ font_rom instance_name (
   //revisar apuntes si no funciona cordenadas y
    assign row_addr_Th = pix_y[5:2];
    assign bit_addr_Th= pix_x[4:2];
-   always @*
+   always @*begin
+	char_addr_Th = 4'h0;
       case (pix_x[8:5])
          4'h6: char_addr_Th = {3'b011, hora1}; //hora 1
          4'h7: char_addr_Th = {3'b011, hora2}; // hora 2
@@ -92,7 +94,7 @@ font_rom instance_name (
 			4'hc: char_addr_Th = {3'b011, sec1}; //sec 1
 			4'hd: char_addr_Th = {3'b011, sec2}; //sec 2
       endcase
-		
+		end
    //-------------------------------------------
    // fecha region
    //   - display fecha
@@ -102,7 +104,8 @@ font_rom instance_name (
    assign fecha_on = (pix_y[8:6]==4) && (2<=pix_x[7:5]) && (pix_x[7:5]<=6);
    assign row_addr_f = pix_y[5:2];
    assign bit_addr_f = pix_x[4:2];
-   always @*
+   always @*begin
+	char_addr_f = 3'o0;
       case (pix_x[7:5])
          // row 1
          3'o2: char_addr_f = 7'h46; // F
@@ -111,7 +114,7 @@ font_rom instance_name (
          3'o5: char_addr_f = 7'h48; // H
          3'o6: char_addr_f = 7'h41; // A
        endcase
-		 
+		 end
    //-------------------------------------------
    // DATE region
    //  - display "DATE 00/00/00" 
@@ -121,7 +124,8 @@ font_rom instance_name (
                     (1<=pix_x[7:6]) && (pix_x[7:6]<=2);
    assign row_addr_Tf = pix_y[4:1];
    assign bit_addr_Tf = pix_x[3:1];
-   always @*
+   always @* begin
+	char_addr_Tf = 4'h0;
       case(pix_x[7:4])
          4'h4: char_addr_Tf = {3'b011, dia1}; //dia 1
          4'h5: char_addr_Tf = {3'b011, dia2}; //dia 2
@@ -133,7 +137,7 @@ font_rom instance_name (
          4'hb: char_addr_Tf = {3'b011, ano2}; //año 2
         
       endcase
-		
+		end
 	//CRONO region
 	//
 	//
@@ -142,7 +146,8 @@ font_rom instance_name (
                     (11<=pix_x[8:5]) && (pix_x[8:5]<=15);
    assign row_addr_c = pix_y[5:2];
    assign bit_addr_c = pix_x[4:2];
-   always @*
+   always @*begin
+	char_addr_c = 4'h0;
       case(pix_x[8:5])
          4'hb: char_addr_c = 7'h43; //C
          4'hc: char_addr_c = 7'h52; //R
@@ -150,7 +155,7 @@ font_rom instance_name (
          4'he: char_addr_c = 7'h4e; //N 
          4'hf: char_addr_c = 7'h4f; //O  
       endcase	
-		
+	end	
 	//time crono region
 	//
 	//
@@ -159,7 +164,8 @@ font_rom instance_name (
                     (11<=pix_x[8:5]) && (pix_x[8:5]<=14);
    assign row_addr_Tc = pix_y[4:1];
    assign bit_addr_Tc = pix_x[3:1];
-   always @*
+   always @*begin
+	char_addr_Tc = 4'h0;
       case(pix_x[7:4])
          4'h6: char_addr_Tc = {3'b011, ch1}; //hora 1 del crono
          4'h7: char_addr_Tc = {3'b011, ch2}; //hora 2 del crono
@@ -170,7 +176,7 @@ font_rom instance_name (
 			4'hc: char_addr_Tc = {3'b011, cs1}; // sec 1 del crono
 			4'hd: char_addr_Tc = {3'b011, cs2}; // sec 2 del crono
 		endcase
-		
+		end
 	// RING region
    //
    // scale 32-by-64 font
@@ -178,7 +184,8 @@ font_rom instance_name (
                     (8<=pix_x[8:5]) && (pix_x[8:5]<=12);
    assign row_addr_r = pix_y[5:2];
    assign bit_addr_r = pix_x[4:2];
-   always @*
+   always @*begin
+		char_addr_r = 7'h00;
       case(pix_x[8:5])
          4'h8: char_addr_r = 7'h43; //*
          4'h9: char_addr_r = 7'h52; //R
@@ -186,7 +193,7 @@ font_rom instance_name (
          4'hb: char_addr_r = 7'h4e; //N 
          4'hc: char_addr_r = 7'h4f; //G  
       endcase	
-	
+	end
 	
    //-------------------------------------------
    // mux for font ROM addresses and rgb
@@ -194,15 +201,20 @@ font_rom instance_name (
    always @*
    begin
       text_rgb = 3'b000;  // background, black
-      if (hora_on)
+		char_addr = 7'b0000000;
+      row_addr = 4'b0000;
+      bit_addr = 3'b000;
+      if (hora_on && video_on)
          begin
             char_addr = char_addr_h;
             row_addr = row_addr_h;
             bit_addr = bit_addr_h;
             if (font_bit)
                text_rgb = 3'b010; //green
+				else 
+					text_rgb =3'b000;
          end
-      else if (Thora_on)
+      else if (Thora_on && video_on)
          begin
 				char_addr = char_addr_Th;
 				row_addr = row_addr_Th;
@@ -216,17 +228,21 @@ font_rom instance_name (
 					text_rgb = 3'b100; //red
 				else if(font_bit)
 					text_rgb =3'b111; //white		
+				else 
+					text_rgb =3'b000;
          end
-      else if (fecha_on)
+      else if (fecha_on && video_on)
          begin
             char_addr = char_addr_f;
             row_addr = row_addr_f;
             bit_addr = bit_addr_f;
             if (font_bit)
                text_rgb = 3'b010; //green
+				else 
+					text_rgb =3'b000;
          end
 			
-		 else if (Tfecha_on)
+		 else if (Tfecha_on && video_on)
          begin
             char_addr = char_addr_Tf;
             row_addr = row_addr_Tf;
@@ -239,48 +255,59 @@ font_rom instance_name (
 					text_rgb = 3'b100; //red
             else if (font_bit)
                text_rgb = 3'b111; //white
+				else 
+					text_rgb =3'b000;	
          end
 			
-		 else if (crono_on)
+		 else if (crono_on && video_on)
          begin
             char_addr = char_addr_c;
             row_addr = row_addr_c;
             bit_addr = bit_addr_c;
             if (font_bit)
                text_rgb = 3'b010; //green
+				else 
+					text_rgb =3'b000;
          end
 			
-		 else if (Tcrono_on)
+		 else if (Tcrono_on && video_on)
          begin
             char_addr = char_addr_Tc;
             row_addr = row_addr_Tc;
             bit_addr = bit_addr_Tc;
-				if (6<=pix_x[7:4]<=7 && bandera_Hcrono)
+				if (6<=pix_x[7:4]<=7 && bandera_Hcrono)begin
 					if (font_bit)
 						text_rgb = 3'b100; //red
-				else if(9<=pix_x[7:4]<=10 && bandera_Mcrono)
+					else 
+					text_rgb =3'b000;end	
+				else if(9<=pix_x[7:4]<=10 && bandera_Mcrono)begin
 					if (font_bit)
 						text_rgb = 3'b100;//red
 					else 
-						text_rgb = 3'b000;
-				else if(12<=pix_x[7:4]<=13 && bandera_Scrono)
+						text_rgb = 3'b000;end
+				else if(12<=pix_x[7:4]<=13 && bandera_Scrono)begin
 					if (font_bit)
 						text_rgb = 3'b100; //red
+					else 
+					text_rgb =3'b000;end
 				else if (font_bit)
 					text_rgb = 3'b111; //white
 				else 
 					text_rgb =3'b000;
          end
 		
-		 else if (ring_on && activring)
+		 else if (ring_on && activring && video_on)
          begin
             char_addr = char_addr_r;
             row_addr = row_addr_r;
             bit_addr = bit_addr_r;
             if (font_bit)
                text_rgb = 3'b100; //red
+				else 
+					text_rgb =3'b000;
          end
-      
+      else 
+				text_rgb =3'b000;
    end
 
    assign text_on = {hora_on, Thora_on, fecha_on, Tfecha_on, crono_on, Tcrono_on, ring_on};
